@@ -42,6 +42,18 @@ export function FichaHistory({
               </button>
             </ConfirmForm>
           </div>
+          {item.photoUrls.length > 0 ? (
+            <div className="measure-photos">
+              {item.photoUrls.map((url, photoIndex) => (
+                <img
+                  key={url}
+                  className="plan-photo"
+                  src={url}
+                  alt={`Foto ${photoIndex + 1} de la medición del ${formatDate(item.recordedAt)}`}
+                />
+              ))}
+            </div>
+          ) : null}
           <dl>
             {ROWS.map((row) => (
               <div key={row.key}>

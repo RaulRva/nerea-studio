@@ -571,6 +571,18 @@ p {
   background: var(--color-sand);
 }
 
+.measure-photos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.measure-photos .plan-photo {
+  aspect-ratio: 1;
+  max-height: none;
+}
+
 .meal-card li p,
 .exercise p,
 .preline {

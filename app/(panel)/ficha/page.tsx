@@ -33,11 +33,13 @@ async function FichaView({
       <Notice code={params.aviso} />
       {first ? (
         <p className="lede">Peso, altura y perímetros. Con esto puede ajustar la dieta y el entreno.</p>
-      ) : null}
+      ) : (
+        <p className="lede">Cada medición se guarda en el historial. Las anteriores siguen aquí.</p>
+      )}
       <FichaHistory measurements={measurements} returnTo="/ficha" />
       <section className="measure-card">
         <h2>{first ? "Tu ficha" : "Nueva medición"}</h2>
-        <FichaForm returnTo="/hoy" submitLabel={first ? "Guardar ficha" : "Registrar medición"} />
+        <FichaForm returnTo={first ? "/hoy" : "/ficha"} submitLabel={first ? "Guardar ficha" : "Registrar medición"} />
       </section>
     </>
   );

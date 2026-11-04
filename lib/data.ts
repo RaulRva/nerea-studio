@@ -75,6 +75,7 @@ function mapMeasurement(row: {
   hip_cm: number | string;
   thigh_cm: number | string;
   recorded_at: string;
+  photo_paths: string[] | null;
 }): Measurement {
   return {
     id: row.id,
@@ -86,7 +87,16 @@ function mapMeasurement(row: {
     hipCm: asNumber(row.hip_cm) ?? 0,
     thighCm: asNumber(row.thigh_cm) ?? 0,
     recordedAt: row.recorded_at,
+    photoUrls: row.photo_paths ?? [],
   };
+}
+
+async function signPhotoPaths(paths: string[]) {
+  const unique = [...new Set(paths)];
+  if (unique.length === 0) return new Map<string, string>();
+  const supabase = await createClient();
+  const { data } = await supabase.storage.from("plan-photos").createSignedUrls(unique, 60 * 60);
+  return new Map((data ?? []).flatMap((item) => (item.signedUrl ? [[item.path, item.signedUrl] as const] : [])));
 }
 
 export async function getMealsFor(clientId: string, day: number) {
@@ -149,13 +159,21 @@ export async function getMeasurements(clientId: string) {
   const { data, error } = await supabase
     .from("body_measurements")
     .select(
-      "id, weight_kg, height_cm, chest_cm, arm_cm, waist_cm, hip_cm, thigh_cm, recorded_at",
+      "id, weight_kg, height_cm, chest_cm, arm_cm, waist_cm, hip_cm, thigh_cm, recorded_at, photo_paths",
     )
     .eq("client_id", clientId)
     .order("recorded_at", { ascending: false });
 
   if (error) throw new Error("No se ha podido cargar la ficha.");
-  return (data ?? []).map(mapMeasurement);
+  const measurements = (data ?? []).map(mapMeasurement);
+  const signed = await signPhotoPaths(measurements.flatMap((item) => item.photoUrls));
+  return measurements.map((item) => ({
+    ...item,
+    photoUrls: item.photoUrls.flatMap((path) => {
+      const url = signed.get(path);
+      return url ? [url] : [];
+    }),
+  }));
 }
 
 export async function listClients(search: string): Promise<ClientSummary[]> {

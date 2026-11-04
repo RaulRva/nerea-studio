@@ -108,7 +108,7 @@ async function ClientStudio({
           <FichaHistory measurements={client.measurements} returnTo={returnTo} />
           <section className="measure-card">
             <h2>Nueva medición</h2>
-            <p className="muted">Úsala cuando tomes las medidas en consulta.</p>
+            <p className="muted">Se añade al historial. Las mediciones anteriores se quedan.</p>
             <FichaForm clientId={client.id} returnTo={returnTo} submitLabel="Guardar medición" />
           </section>
         </>

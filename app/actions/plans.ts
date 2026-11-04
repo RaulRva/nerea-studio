@@ -42,6 +42,20 @@ function readPhoto(formData: FormData) {
   return { file: value, ext };
 }
 
+function readPhotos(formData: FormData) {
+  const files = formData
+    .getAll("photos")
+    .filter((value): value is File => value instanceof File && value.size > 0);
+  if (files.length > 3) return "invalid" as const;
+  const photos: { file: File; ext: string }[] = [];
+  for (const file of files) {
+    const ext = PHOTO_EXT[file.type];
+    if (!ext || file.size > 4 * 1024 * 1024) return "invalid" as const;
+    photos.push({ file, ext });
+  }
+  return photos;
+}
+
 async function dropPhotoIfUnused(supabase: Db, path: string | null) {
   if (!path) return;
   const [{ count: meals }, { count: exercises }] = await Promise.all([
@@ -160,7 +174,28 @@ export async function saveMeasurement(_state: ActionState, formData: FormData): 
   const parsed = parseMeasurement(formData);
   if ("error" in parsed) return parsed;
 
+  const photos = readPhotos(formData);
+  if (photos === "invalid") {
+    return { error: "Puedes añadir hasta 3 fotos JPG, PNG o WebP, de menos de 4 MB cada una." };
+  }
+
+  const id = crypto.randomUUID();
+  const photoPaths: string[] = [];
+  for (const [index, photo] of photos.entries()) {
+    const path = `${clientId}/measurements/${id}/${index + 1}.${photo.ext}`;
+    const { error: uploadError } = await supabase.storage.from("plan-photos").upload(path, photo.file, {
+      contentType: photo.file.type,
+      upsert: false,
+    });
+    if (uploadError) {
+      if (photoPaths.length > 0) await supabase.storage.from("plan-photos").remove(photoPaths);
+      return { error: "No se han podido guardar las fotos. Inténtalo otra vez." };
+    }
+    photoPaths.push(path);
+  }
+
   const { error } = await supabase.from("body_measurements").insert({
+    id,
     client_id: clientId,
     weight_kg: parsed.values.weightKg,
     height_cm: parsed.values.heightCm,
@@ -169,9 +204,13 @@ export async function saveMeasurement(_state: ActionState, formData: FormData): 
     waist_cm: parsed.values.waistCm,
     hip_cm: parsed.values.hipCm,
     thigh_cm: parsed.values.thighCm,
+    photo_paths: photoPaths,
   });
 
-  if (error) return { error: "No se ha podido guardar la ficha. Revisa las medidas." };
+  if (error) {
+    if (photoPaths.length > 0) await supabase.storage.from("plan-photos").remove(photoPaths);
+    return { error: "No se ha podido guardar la ficha. Revisa las medidas." };
+  }
 
   refresh(clientId);
   const fallback = profile.role === "admin" ? `/estudio/${clientId}?seccion=ficha` : "/hoy";
@@ -185,8 +224,14 @@ export async function deleteMeasurement(formData: FormData) {
   if (!id) redirect(returnTo);
 
   const supabase = await createClient();
-  const { data, error } = await supabase.from("body_measurements").delete().eq("id", id).select("client_id");
+  const { data, error } = await supabase
+    .from("body_measurements")
+    .delete()
+    .eq("id", id)
+    .select("client_id, photo_paths");
   if (error || !data?.length) redirect(`${returnTo}${returnTo.includes("?") ? "&" : "?"}aviso=datos`);
+  const photoPaths = data[0].photo_paths ?? [];
+  if (photoPaths.length > 0) await supabase.storage.from("plan-photos").remove(photoPaths);
 
   refresh(data[0].client_id);
   redirect(returnTo);

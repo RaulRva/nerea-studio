@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, type ChangeEvent } from "react";
 import { saveMeasurement } from "@/app/actions/plans";
 import { SubmitButton } from "@/components/submit-button";
 import type { ActionState } from "@/lib/types";
@@ -27,6 +27,7 @@ export function FichaForm({
   submitLabel: string;
 }) {
   const [state, action] = useActionState<ActionState, FormData>(saveMeasurement, {});
+  const [photoLabel, setPhotoLabel] = useState("Ninguna foto seleccionada");
   const [values, setValues] = useState<Record<FieldName, string>>({
     weight_kg: "",
     height_cm: "",
@@ -68,6 +69,33 @@ export function FichaForm({
           </label>
         ))}
       </div>
+      <label className="field">
+        <span>Fotos</span>
+        <input
+          name="photos"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          multiple
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            const input = event.currentTarget;
+            const selected = [...(input.files ?? [])];
+            const kept = selected.slice(0, 3);
+            if (selected.length > 3) {
+              const transfer = new DataTransfer();
+              kept.forEach((file) => transfer.items.add(file));
+              input.files = transfer.files;
+            }
+            setPhotoLabel(
+              kept.length === 0
+                ? "Ninguna foto seleccionada"
+                : selected.length > 3
+                  ? `${kept.map((file) => file.name).join(", ")}. Solo se guardan las 3 primeras.`
+                  : kept.map((file) => file.name).join(", "),
+            );
+          }}
+        />
+        <span className="muted">{photoLabel}. Hasta 3 fotos JPG, PNG o WebP, de menos de 4 MB.</span>
+      </label>
       <SubmitButton>{submitLabel}</SubmitButton>
     </form>
   );

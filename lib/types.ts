@@ -54,6 +54,7 @@ export type Measurement = {
   hipCm: number;
   thighCm: number;
   recordedAt: string;
+  photoUrls: string[];
 };
 
 export type ClientSummary = {
