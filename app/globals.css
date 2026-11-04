@@ -439,6 +439,11 @@ p {
   background: rgba(246, 236, 222, 0.94);
 }
 
+.sidenav .wordmark-full {
+  width: 100%;
+  margin-bottom: 0;
+}
+
 .sidenav nav,
 .section-tabs {
   display: grid;
@@ -485,6 +490,7 @@ p {
 
 .topbar .wordmark {
   display: none;
+  width: 168px;
 }
 
 .shell-content {

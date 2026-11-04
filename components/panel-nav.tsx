@@ -88,7 +88,7 @@ export function PanelNav({
 
   return (
     <aside className="sidenav">
-      <Wordmark href={role === "admin" ? "/estudio" : "/hoy"} />
+      <Wordmark href={role === "admin" ? "/estudio" : "/hoy"} variant="full" />
       <nav aria-label="Panel">
         {links.map((link) => {
           const active = pathname === link.href || pathname.startsWith(`${link.href}/`);

@@ -19,7 +19,7 @@ async function PanelShell({ children }: { children: React.ReactNode }) {
       <PanelNav role={profile.role} name={profile.fullName} needsFicha={needsFicha} />
       <div className="shell-main">
         <header className="topbar">
-          <Wordmark href={profile.role === "admin" ? "/estudio" : "/hoy"} />
+          <Wordmark href={profile.role === "admin" ? "/estudio" : "/hoy"} variant="full" />
           <form action={signOut}>
             <button className="btn btn-ghost" type="submit">
               Cerrar sesión
