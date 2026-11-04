@@ -1,36 +1,16 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nerea Studio
 
-## Getting Started
+Web para que Nerea prepare dietas y entrenos, y cada cliente vea el suyo.
 
-First, run the development server:
+## Puesta en marcha
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Copia `.env.example` a `.env.local`.
+2. Crea un proyecto en Supabase y pega la URL, la clave publicable y la clave secret.
+3. En `ADMIN_EMAILS` pon el correo con el que entrará Nerea. Esa cuenta ve a todos los clientes.
+4. En el SQL editor de Supabase, ejecuta `supabase/migrations/20261104140000_nerea_studio.sql`.
+5. En Authentication, añade `http://localhost:3000/auth/callback` como URL de redirección.
+6. `npm run dev` y abre http://localhost:3000.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Nerea se registra con su correo. El resto de cuentas son clientes: al entrar rellenan la ficha corporal (peso, altura, pecho, brazo, cintura, cadera y muslo) y después ven la dieta por días y el entreno con los pesos.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+La dieta se organiza en desayuno, almuerzo, comida, merienda y cena. Los días van de lunes a domingo.
