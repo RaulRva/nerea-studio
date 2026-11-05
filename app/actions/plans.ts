@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { parseDietWorkbook } from "@/lib/diet-workbook";
 import { requireAdmin, requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionState } from "@/lib/types";
@@ -315,6 +316,55 @@ export async function copyMealDay(formData: FormData) {
   });
   refresh(clientId);
   redirect(studioPath(clientId, target, section, error ? "copia" : "copiado"));
+}
+
+export async function importDiet(formData: FormData) {
+  const { supabase, clientId, day, section } = await studioContext(formData);
+  const file = formData.get("dieta");
+  if (!(file instanceof File) || file.size === 0 || file.size > 2 * 1024 * 1024) {
+    redirect(studioPath(clientId, day, section, "excel"));
+  }
+  if (!file.name.toLowerCase().endsWith(".xlsx")) redirect(studioPath(clientId, day, section, "excel"));
+
+  const parsed = await parseDietWorkbook(Buffer.from(await file.arrayBuffer()));
+  if ("error" in parsed) redirect(studioPath(clientId, day, section, parsed.error));
+
+  const { data: existing, error: existingError } = await supabase
+    .from("meals")
+    .select("id, photo_path")
+    .eq("client_id", clientId);
+  if (existingError) redirect(studioPath(clientId, day, section, "datos"));
+
+  const { error: insertError } = await supabase.from("meals").insert(
+    parsed.rows.map((row) => ({
+      client_id: clientId,
+      day_of_week: row.day,
+      slot: row.slot,
+      title: row.title,
+      detail: row.detail,
+      sort_order: row.sortOrder,
+    })),
+  );
+  if (insertError) redirect(studioPath(clientId, day, section, "datos"));
+
+  const previous = existing ?? [];
+  if (previous.length > 0) {
+    const { error: deleteError } = await supabase
+      .from("meals")
+      .delete()
+      .in(
+        "id",
+        previous.map((meal) => meal.id),
+      );
+    if (!deleteError) {
+      for (const path of new Set(previous.map((meal) => meal.photo_path).filter(Boolean))) {
+        await dropPhotoIfUnused(supabase, path);
+      }
+    }
+  }
+
+  refresh(clientId);
+  redirect(studioPath(clientId, 1, "dieta", "importado"));
 }
 
 export async function clearMealDay(formData: FormData) {

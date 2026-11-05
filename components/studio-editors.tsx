@@ -1,6 +1,7 @@
 import {
   addExercise,
   addMeal,
+  importDiet,
   clearMealDay,
   clearWorkoutDay,
   copyMealDay,
@@ -83,6 +84,28 @@ export function MealEditor({
 }) {
   return (
     <div>
+      <section className="panel-card stack diet-import">
+        <h3>Subir la semana en Excel</h3>
+        <p className="muted">
+          Una fila por comida. Al subirla se sustituye la dieta de los siete días de este cliente.
+        </p>
+        <a href="/plantilla-dieta.xlsx" download>
+          Descargar plantilla
+        </a>
+        <ConfirmForm action={importDiet} message="Se sustituye la dieta de toda la semana de este cliente.">
+          <HiddenPlan clientId={clientId} day={day} section="dieta" />
+          <label className="field">
+            <span>Archivo .xlsx</span>
+            <input
+              name="dieta"
+              type="file"
+              accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              required
+            />
+          </label>
+          <SubmitButton pendingLabel="Subiendo…">Subir Excel</SubmitButton>
+        </ConfirmForm>
+      </section>
       <CopyDay clientId={clientId} day={day} section="dieta" action={copyMealDay} label="Copiar este día a" />
       <ConfirmForm action={clearMealDay} message="¿Quitar todas las comidas de este día?">
         <HiddenPlan clientId={clientId} day={day} section="dieta" />
@@ -134,20 +157,22 @@ export function MealEditor({
                   </li>
                 ))}
               </ul>
-              <form action={addMeal} className="stack">
-                <HiddenPlan clientId={clientId} day={day} section="dieta" />
-                <input type="hidden" name="slot" value={slot.id} />
-                <label className="field">
-                  <span>Añadir</span>
-                  <input name="title" placeholder="Avena con frutos" required />
-                </label>
-                <label className="field">
-                  <span>Cantidades</span>
-                  <textarea name="detail" placeholder="40 g de avena, 200 ml de leche" />
-                </label>
-                <PhotoField />
-                <SubmitButton pendingLabel="Añadiendo…">Añadir</SubmitButton>
-              </form>
+              {items.length === 0 ? (
+                <form action={addMeal} className="stack">
+                  <HiddenPlan clientId={clientId} day={day} section="dieta" />
+                  <input type="hidden" name="slot" value={slot.id} />
+                  <label className="field">
+                    <span>Añadir</span>
+                    <input name="title" placeholder="Avena con frutos" required />
+                  </label>
+                  <label className="field">
+                    <span>Cantidades</span>
+                    <textarea name="detail" placeholder="40 g de avena, 200 ml de leche" />
+                  </label>
+                  <PhotoField />
+                  <SubmitButton pendingLabel="Añadiendo…">Añadir</SubmitButton>
+                </form>
+              ) : null}
             </section>
           );
         })}

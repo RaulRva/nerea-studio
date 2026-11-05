@@ -352,6 +352,15 @@ p {
   padding: 22px;
 }
 
+.diet-import {
+  margin-bottom: 18px;
+}
+
+.diet-import a {
+  width: fit-content;
+  text-decoration: underline;
+}
+
 .stack,
 .auth-card form,
 .measure-card form {

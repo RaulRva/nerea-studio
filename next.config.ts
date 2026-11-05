@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
     },
   },
   partialPrefetching: true,
+  serverExternalPackages: ["exceljs"],
   turbopack: {
     rules: {
       "*.css": {
