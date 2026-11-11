@@ -19,6 +19,9 @@ export default function HomePage() {
               <Link href="/registro" className="btn btn-primary">
                 Crear mi cuenta
               </Link>
+              <Link href="/cuestionario" className="btn btn-ghost">
+                Rellenar cuestionario
+              </Link>
               <Link href="/entrar" className="btn btn-ghost">
                 Ya tengo cuenta
               </Link>

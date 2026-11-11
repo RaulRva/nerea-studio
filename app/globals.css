@@ -361,6 +361,28 @@ p {
   text-decoration: underline;
 }
 
+.intake {
+  width: min(760px, calc(100% - 40px));
+  margin: 18px auto 72px;
+  display: grid;
+  gap: 18px;
+}
+
+.intake h1 {
+  font-family: var(--font-display);
+  font-weight: 520;
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  line-height: 1.05;
+}
+
+.hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 .stack,
 .auth-card form,
 .measure-card form {

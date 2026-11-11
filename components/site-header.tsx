@@ -39,6 +39,9 @@ export function SiteHeader() {
     <header className="site-header">
       <Wordmark variant="full" />
       <div className="header-actions">
+        <Link href="/cuestionario" className="btn btn-ghost">
+          Cuestionario
+        </Link>
         <Suspense fallback={<GuestLinks />}>
           <AccountLinks />
         </Suspense>
