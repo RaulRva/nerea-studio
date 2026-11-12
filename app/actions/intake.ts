@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { ActionState } from "@/lib/types";
 import { cleanBlock, cleanText, formString } from "@/lib/validation";
 
-const RECIPIENTS = ["nerea.rivera.na@gmail.com", "raulriveranava10@gmail.com"];
+const RECIPIENTS = ["nerea.rva1@gmail.com", "raulriveranava10@gmail.com"];
 
 const SEXO = ["Mujer", "Hombre", "Otro / Prefiero no indicarlo"];
 const OBJETIVOS = [
