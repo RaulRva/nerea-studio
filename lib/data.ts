@@ -3,6 +3,7 @@ import "server-only";
 import { asNumber } from "@/lib/format";
 import { isMealSlot } from "@/lib/constants";
 import { requireAdmin, requirePlanAccess } from "@/lib/auth";
+import { sharedHabitDay, signSharedPhotos } from "@/lib/shared-habits";
 import { createClient } from "@/lib/supabase/server";
 import type { ClientSummary, Exercise, Meal, Measurement, WorkoutDay } from "@/lib/types";
 
@@ -116,32 +117,49 @@ export async function getMealsFor(clientId: string, day: number) {
   return withSignedPhotos(meals);
 }
 
-export async function getWorkout(clientId: string, day: number): Promise<WorkoutDay | null> {
+export async function getMealsWeek(clientId: string) {
   const supabase = await createClient();
-  const { data: dayRow, error } = await supabase
-    .from("workout_days")
-    .select("id, day_of_week, title, notes")
+  const { data, error } = await supabase
+    .from("meals")
+    .select("id, day_of_week, slot, title, detail, sort_order, photo_path")
     .eq("client_id", clientId)
-    .eq("day_of_week", day)
-    .maybeSingle();
-
-  if (error) throw new Error("No se ha podido cargar el entreno.");
-  if (!dayRow) return null;
-
-  const { data: exercises, error: exerciseError } = await supabase
-    .from("exercises")
-    .select("id, name, sets, reps, weight_kg, rest_seconds, notes, sort_order, photo_path")
-    .eq("workout_day_id", dayRow.id)
+    .order("day_of_week", { ascending: true })
     .order("sort_order", { ascending: true });
 
-  if (exerciseError) throw new Error("No se ha podido cargar el entreno.");
+  if (error) throw new Error("No se ha podido cargar la dieta.");
+  return (data ?? []).flatMap((row) => {
+    const meal = mapMeal(row);
+    return meal ? [meal] : [];
+  });
+}
+
+export async function getHabits(): Promise<WorkoutDay | null> {
+  const shared = await sharedHabitDay();
+  if (!shared) return { id: "shared", day: 1, title: "", notes: "", exercises: [] };
+
+  const { data, error } = await shared.admin
+    .from("exercises")
+    .select("id, name, sets, reps, weight_kg, rest_seconds, notes, sort_order, photo_path")
+    .eq("workout_day_id", shared.dayId)
+    .order("sort_order", { ascending: true });
+
+  if (error) throw new Error("No se han podido cargar los hábitos.");
+
+  const rows = (data ?? []).map(mapExercise);
+  const signed = await signSharedPhotos(
+    shared.admin,
+    rows.flatMap((row) => (row.photoUrl ? [row.photoUrl] : [])),
+  );
 
   return {
-    id: dayRow.id,
-    day: dayRow.day_of_week,
-    title: dayRow.title,
-    notes: dayRow.notes,
-    exercises: await withSignedPhotos((exercises ?? []).map(mapExercise)),
+    id: shared.dayId,
+    day: 1,
+    title: "",
+    notes: shared.notes,
+    exercises: rows.map((row) => ({
+      ...row,
+      photoUrl: row.photoUrl ? (signed.get(row.photoUrl) ?? null) : null,
+    })),
   };
 }
 
@@ -149,7 +167,7 @@ export async function getMyDay(day: number) {
   const profile = await requirePlanAccess();
   const [meals, workout] = await Promise.all([
     getMealsFor(profile.id, day),
-    getWorkout(profile.id, day),
+    getHabits(),
   ]);
   return { profile, meals, workout };
 }

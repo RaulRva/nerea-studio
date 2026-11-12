@@ -32,7 +32,7 @@ async function FichaView({
       </header>
       <Notice code={params.aviso} />
       {first ? (
-        <p className="lede">Peso, altura y perímetros. Con esto puede ajustar la dieta y el entreno.</p>
+        <p className="lede">Peso, altura y perímetros. Con esto puede ajustar la dieta y los hábitos.</p>
       ) : (
         <p className="lede">Cada medición se guarda en el historial. Las anteriores siguen aquí.</p>
       )}

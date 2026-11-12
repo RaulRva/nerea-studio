@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { parseDietWorkbook } from "@/lib/diet-workbook";
 import { requireAdmin, requireUser } from "@/lib/auth";
+import { sharedHabitDay } from "@/lib/shared-habits";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionState } from "@/lib/types";
 import {
@@ -59,11 +60,12 @@ function readPhotos(formData: FormData) {
 
 async function dropPhotoIfUnused(supabase: Db, path: string | null) {
   if (!path) return;
-  const [{ count: meals }, { count: exercises }] = await Promise.all([
+  const [{ count: meals }, { count: exercises }, { count: habits }] = await Promise.all([
     supabase.from("meals").select("id", { count: "exact", head: true }).eq("photo_path", path),
     supabase.from("exercises").select("id", { count: "exact", head: true }).eq("photo_path", path),
+    supabase.from("habits").select("id", { count: "exact", head: true }).eq("photo_path", path),
   ]);
-  if ((meals ?? 0) + (exercises ?? 0) === 0) {
+  if ((meals ?? 0) + (exercises ?? 0) + (habits ?? 0) === 0) {
     await supabase.storage.from("plan-photos").remove([path]);
   }
 }
@@ -71,7 +73,7 @@ async function dropPhotoIfUnused(supabase: Db, path: string | null) {
 async function savePhoto(
   supabase: Db,
   clientId: string,
-  kind: "meals" | "exercises",
+  kind: "meals" | "exercises" | "habits",
   id: string,
   formData: FormData,
 ) {
@@ -84,7 +86,7 @@ async function savePhoto(
   const currentPath = current?.photo_path ?? null;
 
   if (photo) {
-    const path = `${clientId}/${kind}/${id}.${photo.ext}`;
+    const path = kind === "habits" ? `shared/habits/${id}.${photo.ext}` : `${clientId}/${kind}/${id}.${photo.ext}`;
     const { error } = await supabase.storage.from("plan-photos").upload(path, photo.file, {
       contentType: photo.file.type,
       upsert: true,
@@ -502,18 +504,112 @@ export async function copyWorkoutDay(formData: FormData) {
   redirect(studioPath(clientId, target, section, error ? "copia" : "copiado"));
 }
 
+function habitsPath(aviso?: string) {
+  return aviso ? `/estudio/habitos?aviso=${aviso}` : "/estudio/habitos";
+}
+
+async function habitStore() {
+  await requireAdmin();
+  const shared = await sharedHabitDay();
+  if (!shared) redirect(habitsPath("datos"));
+  return shared;
+}
+
+export async function saveHabitNote(formData: FormData) {
+  const shared = await habitStore();
+  const notes = cleanBlock(formData.get("notes"), 2000);
+  const { error } = await shared.admin.from("workout_days").update({ notes }).eq("id", shared.dayId);
+  refresh();
+  redirect(habitsPath(error ? "datos" : undefined));
+}
+
+export async function addHabit(formData: FormData) {
+  const parsed = parseExerciseFields(formData);
+  if ("error" in parsed) redirect(habitsPath("titulo"));
+  const shared = await habitStore();
+  if (readPhoto(formData) === "invalid") redirect(habitsPath("foto"));
+
+  const { data: last } = await shared.admin
+    .from("exercises")
+    .select("sort_order")
+    .eq("workout_day_id", shared.dayId)
+    .order("sort_order", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const { data: created, error } = await shared.admin
+    .from("exercises")
+    .insert({
+      workout_day_id: shared.dayId,
+      name: parsed.values.name,
+      sets: parsed.values.sets,
+      reps: parsed.values.reps,
+      weight_kg: parsed.values.weightKg,
+      rest_seconds: parsed.values.restSeconds,
+      notes: parsed.values.notes,
+      sort_order: (last?.sort_order ?? -1) + 1,
+    })
+    .select("id")
+    .single();
+  const photo =
+    !error && created ? await savePhoto(shared.admin as Db, shared.ownerId, "exercises", created.id, formData) : "ok";
+  refresh();
+  redirect(habitsPath(error || !created ? "datos" : photoAviso(photo)));
+}
+
+export async function updateHabit(formData: FormData) {
+  const id = parseUuid(formData.get("id"));
+  const parsed = parseExerciseFields(formData);
+  if (!id || "error" in parsed) redirect(habitsPath("titulo"));
+  const shared = await habitStore();
+  const { error } = await shared.admin
+    .from("exercises")
+    .update({
+      name: parsed.values.name,
+      sets: parsed.values.sets,
+      reps: parsed.values.reps,
+      weight_kg: parsed.values.weightKg,
+      rest_seconds: parsed.values.restSeconds,
+      notes: parsed.values.notes,
+    })
+    .eq("id", id);
+  const photo = error ? "ok" : await savePhoto(shared.admin as Db, shared.ownerId, "exercises", id, formData);
+  refresh();
+  redirect(habitsPath(error ? "datos" : photoAviso(photo)));
+}
+
+export async function deleteHabit(formData: FormData) {
+  const id = parseUuid(formData.get("id"));
+  if (!id) redirect(habitsPath("datos"));
+  const shared = await habitStore();
+  const { data, error } = await shared.admin.from("exercises").delete().eq("id", id).select("photo_path").maybeSingle();
+  if (!error) await dropPhotoIfUnused(shared.admin as Db, data?.photo_path ?? null);
+  refresh();
+  redirect(habitsPath(error ? "datos" : undefined));
+}
+
+export async function clearHabits(_formData: FormData) {
+  const shared = await habitStore();
+  const { data: photos } = await shared.admin.from("exercises").select("photo_path").eq("workout_day_id", shared.dayId);
+  const { error } = await shared.admin.from("exercises").delete().eq("workout_day_id", shared.dayId);
+  if (!error) {
+    await shared.admin.from("workout_days").update({ notes: "" }).eq("id", shared.dayId);
+    for (const path of new Set((photos ?? []).map((row) => row.photo_path).filter(Boolean))) {
+      await dropPhotoIfUnused(shared.admin as Db, path);
+    }
+  }
+  refresh();
+  redirect(habitsPath(error ? "datos" : undefined));
+}
+
 export async function clearWorkoutDay(formData: FormData) {
   const { supabase, clientId, day, section } = await studioContext(formData);
-  const { data: dayRow } = await supabase
-    .from("workout_days")
-    .select("id")
-    .eq("client_id", clientId)
-    .eq("day_of_week", day)
-    .maybeSingle();
-  const { data: photos } = dayRow
-    ? await supabase.from("exercises").select("photo_path").eq("workout_day_id", dayRow.id)
+  const { data: dayRows } = await supabase.from("workout_days").select("id").eq("client_id", clientId);
+  const dayIds = (dayRows ?? []).map((row) => row.id);
+  const { data: photos } = dayIds.length
+    ? await supabase.from("exercises").select("photo_path").in("workout_day_id", dayIds)
     : { data: [] };
-  const { error } = await supabase.from("workout_days").delete().eq("client_id", clientId).eq("day_of_week", day);
+  const { error } = await supabase.from("workout_days").delete().eq("client_id", clientId);
   if (!error) {
     for (const path of new Set((photos ?? []).map((row) => row.photo_path).filter(Boolean))) {
       await dropPhotoIfUnused(supabase, path);

@@ -8,12 +8,12 @@ export default function HomePage() {
       <main>
         <section className="hero">
           <div>
-            <p className="kicker">Nutrición y entrenamiento</p>
+            <p className="kicker">Nutrición y hábitos</p>
             <h1>
               El plan de cada día, <em>escrito para ti.</em>
             </h1>
             <p className="lede">
-              Nerea prepara tu dieta por comidas y tus sesiones con los pesos. Tú abres el día y sabes qué toca.
+              Nerea prepara tu dieta por comidas y tus hábitos saludables. Tú abres el día y sabes qué toca.
             </p>
             <div className="hero-actions">
               <Link href="/registro" className="btn btn-primary">
@@ -44,13 +44,6 @@ export default function HomePage() {
                 <p className="muted">140 g · 70 g en crudo</p>
               </li>
             </ol>
-            <div className="preview-set">
-              <div>
-                <small>Sentadilla</small>
-                <strong>4 series · 8 reps</strong>
-              </div>
-              <b>60 kg</b>
-            </div>
           </article>
         </section>
         <section className="steps-wrap" aria-labelledby="como">
@@ -63,7 +56,7 @@ export default function HomePage() {
             <article>
               <strong>02</strong>
               <h2>Nerea escribe el plan</h2>
-              <p>Comidas por día, de desayuno a cena, y cada ejercicio con sus series y su peso.</p>
+              <p>Comidas por día, de desayuno a cena, y hábitos saludables.</p>
             </article>
             <article>
               <strong>03</strong>

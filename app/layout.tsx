@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     template: "%s · Nerea Studio",
   },
   description:
-    "Planes de nutrición y entrenamiento. Dieta por días y sesiones con los pesos, preparadas por Nerea.",
+    "Planes de nutrición y hábitos saludables. Dieta por días, pasos, agua y cinta, preparados por Nerea.",
 };
 
 export const viewport: Viewport = {

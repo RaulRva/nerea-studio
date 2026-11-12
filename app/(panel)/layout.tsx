@@ -34,7 +34,7 @@ async function PanelShell({ children }: { children: React.ReactNode }) {
             </p>
           ) : null}
           {needsFicha ? (
-            <p className="banner">Completa la ficha corporal para ver la dieta y los entrenos.</p>
+            <p className="banner">Completa la ficha corporal para ver la dieta y los hábitos.</p>
           ) : null}
           {children}
         </div>

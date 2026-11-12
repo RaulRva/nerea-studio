@@ -38,9 +38,8 @@ function Icon({ name }: { name: "sun" | "bowl" | "bar" | "ruler" | "people" }) {
   if (name === "bar") {
     return (
       <svg {...props}>
-        <path d="M8 12h8" />
-        <circle cx="6" cy="12" r="2.2" />
-        <circle cx="18" cy="12" r="2.2" />
+        <circle cx="12" cy="12" r="8" />
+        <path d="M8.5 12.2 10.7 14.4 15.5 9.4" />
       </svg>
     );
   }
@@ -65,7 +64,7 @@ function Icon({ name }: { name: "sun" | "bowl" | "bar" | "ruler" | "people" }) {
 const clientLinks = [
   { href: "/hoy", label: "Hoy", icon: "sun" as const },
   { href: "/dieta", label: "Dieta", icon: "bowl" as const },
-  { href: "/entreno", label: "Entreno", icon: "bar" as const },
+  { href: "/entreno", label: "Hábitos", icon: "bar" as const },
   { href: "/ficha", label: "Ficha", icon: "ruler" as const },
 ];
 
@@ -81,7 +80,10 @@ export function PanelNav({
   const pathname = usePathname();
   const links =
     role === "admin"
-      ? [{ href: "/estudio", label: "Clientes", icon: "people" as const }]
+      ? [
+          { href: "/estudio", label: "Clientes", icon: "people" as const },
+          { href: "/estudio/habitos", label: "Hábitos", icon: "bar" as const },
+        ]
       : needsFicha
         ? clientLinks.filter((link) => link.href === "/ficha")
         : clientLinks;
@@ -91,7 +93,10 @@ export function PanelNav({
       <Wordmark href={role === "admin" ? "/estudio" : "/hoy"} variant="full" />
       <nav aria-label="Panel">
         {links.map((link) => {
-          const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
+          const active =
+            link.href === "/estudio"
+              ? pathname === "/estudio" || /^\/estudio\/[0-9a-f-]{36}$/i.test(pathname)
+              : pathname === link.href || pathname.startsWith(`${link.href}/`);
           return (
             <Link key={link.href} href={link.href} className="nav-link" aria-current={active ? "page" : undefined}>
               <Icon name={link.icon} />

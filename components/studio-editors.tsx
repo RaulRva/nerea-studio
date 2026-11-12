@@ -1,15 +1,14 @@
 import {
-  addExercise,
+  addHabit,
   addMeal,
   importDiet,
+  clearHabits,
   clearMealDay,
-  clearWorkoutDay,
   copyMealDay,
-  copyWorkoutDay,
-  deleteExercise,
+  deleteHabit,
   deleteMeal,
-  saveWorkoutDay,
-  updateExercise,
+  saveHabitNote,
+  updateHabit,
   updateMeal,
 } from "@/app/actions/plans";
 import { ConfirmForm } from "@/components/confirm-form";
@@ -181,41 +180,24 @@ export function MealEditor({
   );
 }
 
-export function WorkoutEditor({
-  clientId,
-  day,
-  workout,
-}: {
-  clientId: string;
-  day: number;
-  workout: WorkoutDay | null;
-}) {
+export function WorkoutEditor({ workout }: { workout: WorkoutDay | null }) {
   return (
     <div className="stack">
-      <form action={saveWorkoutDay} className="panel-card stack">
-        <HiddenPlan clientId={clientId} day={day} section="entreno" />
+      <form action={saveHabitNote} className="panel-card stack">
         <label className="field">
-          <span>Nombre de la sesión</span>
-          <input name="title" defaultValue={workout?.title ?? ""} placeholder="Tren inferior o Descanso" />
+          <span>Nota para todos</span>
+          <textarea
+            name="notes"
+            defaultValue={workout?.notes ?? ""}
+            placeholder="Andar 10.000 pasos, beber 2 litros de agua y cinta por intervalos de inclinación."
+          />
         </label>
-        <label className="field">
-          <span>Nota para el cliente</span>
-          <textarea name="notes" defaultValue={workout?.notes ?? ""} placeholder="Calienta 5 minutos antes de empezar." />
-        </label>
-        <SubmitButton>Guardar sesión</SubmitButton>
+        <SubmitButton>Guardar nota</SubmitButton>
       </form>
 
-      <CopyDay
-        clientId={clientId}
-        day={day}
-        section="entreno"
-        action={copyWorkoutDay}
-        label="Copiar este entreno a"
-      />
-      <ConfirmForm action={clearWorkoutDay} message="¿Quitar el entreno de este día?">
-        <HiddenPlan clientId={clientId} day={day} section="entreno" />
+      <ConfirmForm action={clearHabits} message="¿Quitar los hábitos? Dejarán de verlos todos los clientes.">
         <button className="btn-quiet" type="submit">
-          Vaciar día
+          Quitar los hábitos
         </button>
       </ConfirmForm>
 
@@ -236,8 +218,7 @@ export function WorkoutEditor({
               </p>
               <details>
                 <summary>Editar</summary>
-                <form action={updateExercise} className="stack">
-                  <HiddenPlan clientId={clientId} day={day} section="entreno" />
+                <form action={updateHabit} className="stack">
                   <input type="hidden" name="id" value={exercise.id} />
                   <ExerciseFields
                     values={{
@@ -254,8 +235,7 @@ export function WorkoutEditor({
                 </form>
               </details>
             </div>
-            <ConfirmForm action={deleteExercise} message="¿Quitar este ejercicio?">
-              <HiddenPlan clientId={clientId} day={day} section="entreno" />
+            <ConfirmForm action={deleteHabit} message="¿Quitar este hábito? Deja de verlo todo el mundo.">
               <input type="hidden" name="id" value={exercise.id} />
               <button className="btn-quiet" type="submit">
                 Quitar
@@ -263,12 +243,11 @@ export function WorkoutEditor({
             </ConfirmForm>
           </article>
         ))}
-        <form action={addExercise} className="stack" style={{ marginTop: 16 }}>
-          <HiddenPlan clientId={clientId} day={day} section="entreno" />
-          <h3>Nuevo ejercicio</h3>
+        <form action={addHabit} className="stack" style={{ marginTop: 16 }}>
+          <h3>Nuevo hábito</h3>
           <ExerciseFields />
           <PhotoField />
-          <SubmitButton pendingLabel="Añadiendo…">Añadir ejercicio</SubmitButton>
+          <SubmitButton pendingLabel="Añadiendo…">Añadir hábito</SubmitButton>
         </form>
       </div>
     </div>
@@ -301,8 +280,8 @@ function ExerciseFields({
   return (
     <>
       <label className="field">
-        <span>Ejercicio</span>
-        <input name="name" defaultValue={values?.name} placeholder="Sentadilla" required />
+        <span>Hábito</span>
+        <input name="name" defaultValue={values?.name} placeholder="Andar 10.000 pasos al día" required />
       </label>
       <div className="measure-grid">
         <label className="field">
@@ -330,7 +309,7 @@ function ExerciseFields({
       </div>
       <label className="field">
         <span>Nota</span>
-        <textarea name="notes" defaultValue={values?.notes} placeholder="Baja controlado." />
+        <textarea name="notes" defaultValue={values?.notes} placeholder="Beber 2 litros de agua. Cinta por intervalos de inclinación después de cada entreno." />
       </label>
     </>
   );

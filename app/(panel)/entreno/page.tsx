@@ -1,38 +1,34 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { dayLabel } from "@/lib/constants";
-import { getMyDay } from "@/lib/data";
-import { parseDay } from "@/lib/validation";
-import { DaySwitcher } from "@/components/day-switcher";
+import { requirePlanAccess } from "@/lib/auth";
+import { getHabits } from "@/lib/data";
 import { ExerciseBoard } from "@/components/exercise-board";
 
-export const metadata: Metadata = { title: "Entreno" };
+export const metadata: Metadata = { title: "Hábitos saludables" };
 
-async function WorkoutView({ searchParams }: { searchParams: Promise<{ dia?: string }> }) {
-  const params = await searchParams;
+async function WorkoutView() {
   await connection();
-  const day = parseDay(params.dia);
-  const { workout } = await getMyDay(day);
+  await requirePlanAccess();
+  const workout = await getHabits();
 
   return (
     <>
       <header className="page-head">
         <div>
-          <p className="page-kicker">Entreno</p>
-          <h1 className="page-title">{dayLabel(day)}</h1>
+          <p className="page-kicker">Para todos</p>
+          <h1 className="page-title">Hábitos saludables</h1>
         </div>
       </header>
-      <DaySwitcher basePath="/entreno" day={day} />
       <ExerciseBoard workout={workout} />
     </>
   );
 }
 
-export default function WorkoutPage({ searchParams }: { searchParams: Promise<{ dia?: string }> }) {
+export default function WorkoutPage() {
   return (
-    <Suspense fallback={<p className="muted">Cargando el entreno…</p>}>
-      <WorkoutView searchParams={searchParams} />
+    <Suspense fallback={<p className="muted">Cargando los hábitos…</p>}>
+      <WorkoutView />
     </Suspense>
   );
 }

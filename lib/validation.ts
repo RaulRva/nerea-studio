@@ -111,7 +111,7 @@ export function parseMeasurement(
 
 export function parseExerciseFields(formData: FormData) {
   const name = cleanText(formData.get("name"), 120);
-  if (name.length < 2) return { error: "Escribe el nombre del ejercicio." as const };
+  if (name.length < 2) return { error: "Escribe el nombre del hábito." as const };
 
   const setsRaw = formString(formData.get("sets")).trim();
   let sets: number | null = null;

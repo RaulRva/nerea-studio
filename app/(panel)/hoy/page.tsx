@@ -38,8 +38,8 @@ async function Today() {
         </section>
         <section>
           <div className="page-head">
-            <h2>Entreno de hoy</h2>
-            <Link href={`/entreno?dia=${day}`}>Ver la semana</Link>
+            <h2>Hábitos</h2>
+            <Link href="/entreno">Ver los hábitos</Link>
           </div>
           <ExerciseBoard workout={workout} />
         </section>

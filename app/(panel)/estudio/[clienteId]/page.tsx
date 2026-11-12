@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { dayLabel } from "@/lib/constants";
-import { getClientStudio, getMealsFor, getWorkout } from "@/lib/data";
+import { getClientStudio, getMealsFor, getMealsWeek } from "@/lib/data";
 import { formatDate, formatNumber } from "@/lib/format";
 import { parseDay, parseSection, parseUuid } from "@/lib/validation";
 import { DaySwitcher } from "@/components/day-switcher";
 import { FichaForm } from "@/components/ficha-form";
 import { FichaHistory } from "@/components/ficha-history";
 import { Notice } from "@/components/notice";
-import { MealEditor, WorkoutEditor } from "@/components/studio-editors";
+import { DietSheet } from "@/components/diet-sheet";
+import { PrintButton } from "@/components/print-button";
+import { MealEditor } from "@/components/studio-editors";
 
 export const metadata: Metadata = { title: "Cliente" };
 
@@ -32,10 +34,9 @@ async function ClientStudio({
 
   const day = parseDay(query.dia);
   const section = parseSection(query.seccion);
-  const [meals, workout] = await Promise.all([
-    section === "dieta" ? getMealsFor(client.id, day) : Promise.resolve([]),
-    section === "entreno" ? getWorkout(client.id, day) : Promise.resolve(null),
-  ]);
+  if (section === "entreno") redirect("/estudio/habitos");
+  const meals = section === "dieta" ? await getMealsFor(client.id, day) : [];
+  const week = section === "dieta" ? await getMealsWeek(client.id) : [];
   const latest = client.measurements[0];
   const returnTo = `/estudio/${client.id}?seccion=ficha&dia=${day}`;
 
@@ -77,7 +78,6 @@ async function ClientStudio({
         {(
           [
             ["dieta", "Dieta"],
-            ["entreno", "Entreno"],
             ["ficha", "Ficha"],
           ] as const
         ).map(([value, label]) => (
@@ -90,19 +90,17 @@ async function ClientStudio({
           </Link>
         ))}
       </nav>
-      {section !== "ficha" ? <DaySwitcher basePath={`/estudio/${client.id}`} day={day} extra={{ seccion: section }} /> : null}
       {section === "dieta" ? (
-        <>
-          <h2 className="page-kicker">{dayLabel(day)}</h2>
+        <div className="diet-screen">
+          <div className="page-head">
+            <h2 className="page-kicker">{dayLabel(day)}</h2>
+            <PrintButton />
+          </div>
+          <DaySwitcher basePath={`/estudio/${client.id}`} day={day} extra={{ seccion: section }} />
           <MealEditor clientId={client.id} day={day} meals={meals} />
-        </>
+        </div>
       ) : null}
-      {section === "entreno" ? (
-        <>
-          <h2 className="page-kicker">{dayLabel(day)}</h2>
-          <WorkoutEditor clientId={client.id} day={day} workout={workout} />
-        </>
-      ) : null}
+      {section === "dieta" ? <DietSheet title={`Dieta de ${client.fullName || "cliente"}`} meals={week} /> : null}
       {section === "ficha" ? (
         <>
           <FichaHistory measurements={client.measurements} returnTo={returnTo} />

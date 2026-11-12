@@ -17,7 +17,7 @@ async function LoginScreen({
     <AuthScreen
       kicker="Entrar"
       title="Tu plan te espera."
-      lead="Entra para ver la dieta del día y los pesos de cada ejercicio."
+      lead="Entra para ver la dieta del día y tus hábitos saludables."
       alternate={
         <p>
           ¿Aún no tienes cuenta? <Link href="/registro">Regístrate</Link>
