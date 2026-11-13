@@ -56,8 +56,8 @@ export function parseDay(value: string | undefined, fallback = madridIsoWeekday(
   return day;
 }
 
-export function parseSection(value: string | undefined): "dieta" | "entreno" | "ficha" {
-  if (value === "entreno" || value === "ficha") return value;
+export function parseSection(value: string | undefined): "dieta" | "entreno" | "ficha" | "compra" {
+  if (value === "entreno" || value === "ficha" || value === "compra") return value;
   return "dieta";
 }
 

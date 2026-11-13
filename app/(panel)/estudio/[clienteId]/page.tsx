@@ -12,7 +12,9 @@ import { FichaForm } from "@/components/ficha-form";
 import { FichaHistory } from "@/components/ficha-history";
 import { Notice } from "@/components/notice";
 import { DietSheet } from "@/components/diet-sheet";
+import { FichaEvolution } from "@/components/ficha-evolution";
 import { PrintButton } from "@/components/print-button";
+import { ShoppingList } from "@/components/shopping-list";
 import { MealEditor } from "@/components/studio-editors";
 
 export const metadata: Metadata = { title: "Cliente" };
@@ -36,7 +38,7 @@ async function ClientStudio({
   const section = parseSection(query.seccion);
   if (section === "entreno") redirect("/estudio/habitos");
   const meals = section === "dieta" ? await getMealsFor(client.id, day) : [];
-  const week = section === "dieta" ? await getMealsWeek(client.id) : [];
+  const week = section === "dieta" || section === "compra" ? await getMealsWeek(client.id) : [];
   const latest = client.measurements[0];
   const returnTo = `/estudio/${client.id}?seccion=ficha&dia=${day}`;
 
@@ -78,6 +80,7 @@ async function ClientStudio({
         {(
           [
             ["dieta", "Dieta"],
+            ["compra", "Compra"],
             ["ficha", "Ficha"],
           ] as const
         ).map(([value, label]) => (
@@ -101,8 +104,12 @@ async function ClientStudio({
         </div>
       ) : null}
       {section === "dieta" ? <DietSheet title={`Dieta de ${client.fullName || "cliente"}`} meals={week} /> : null}
+      {section === "compra" ? (
+        <ShoppingList title={`Lista de la compra de ${client.fullName || "cliente"}`} meals={week} />
+      ) : null}
       {section === "ficha" ? (
         <>
+          <FichaEvolution measurements={client.measurements} />
           <FichaHistory measurements={client.measurements} returnTo={returnTo} />
           <section className="measure-card">
             <h2>Nueva medición</h2>

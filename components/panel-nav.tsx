@@ -6,7 +6,7 @@ import { signOut } from "@/app/actions/auth";
 import { Wordmark } from "@/components/wordmark";
 import type { Role } from "@/lib/types";
 
-function Icon({ name }: { name: "sun" | "bowl" | "bar" | "ruler" | "people" }) {
+function Icon({ name }: { name: "sun" | "bowl" | "bag" | "bar" | "ruler" | "people" }) {
   const props = {
     width: 22,
     height: 22,
@@ -32,6 +32,14 @@ function Icon({ name }: { name: "sun" | "bowl" | "bar" | "ruler" | "people" }) {
       <svg {...props}>
         <path d="M4 10h16c0 5-3.2 8-8 8s-8-3-8-8z" />
         <path d="M8 10c.4-2 1.6-3 4-3s3.6 1 4 3" />
+      </svg>
+    );
+  }
+  if (name === "bag") {
+    return (
+      <svg {...props}>
+        <path d="M6 8h12l-1 12H7L6 8z" />
+        <path d="M9 8V7a3 3 0 0 1 6 0v1" />
       </svg>
     );
   }
@@ -64,6 +72,7 @@ function Icon({ name }: { name: "sun" | "bowl" | "bar" | "ruler" | "people" }) {
 const clientLinks = [
   { href: "/hoy", label: "Hoy", icon: "sun" as const },
   { href: "/dieta", label: "Dieta", icon: "bowl" as const },
+  { href: "/compra", label: "Compra", icon: "bag" as const },
   { href: "/entreno", label: "Hábitos", icon: "bar" as const },
   { href: "/ficha", label: "Ficha", icon: "ruler" as const },
 ];

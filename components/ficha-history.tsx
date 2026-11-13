@@ -1,17 +1,8 @@
 import { deleteMeasurement } from "@/app/actions/plans";
 import { ConfirmForm } from "@/components/confirm-form";
 import { formatDate, formatDelta, formatNumber } from "@/lib/format";
+import { MEASURE_ROWS, measureValue } from "@/lib/measures";
 import type { Measurement } from "@/lib/types";
-
-const ROWS: { key: keyof Measurement; label: string; unit: string; digits: number }[] = [
-  { key: "weightKg", label: "Peso", unit: "kg", digits: 2 },
-  { key: "heightCm", label: "Altura", unit: "cm", digits: 1 },
-  { key: "chestCm", label: "Pecho", unit: "cm", digits: 1 },
-  { key: "armCm", label: "Brazo", unit: "cm", digits: 1 },
-  { key: "waistCm", label: "Cintura", unit: "cm", digits: 1 },
-  { key: "hipCm", label: "Cadera", unit: "cm", digits: 1 },
-  { key: "thighCm", label: "Muslo", unit: "cm", digits: 1 },
-];
 
 export function FichaHistory({
   measurements,
@@ -55,11 +46,11 @@ export function FichaHistory({
             </div>
           ) : null}
           <dl>
-            {ROWS.map((row) => (
+            {MEASURE_ROWS.map((row) => (
               <div key={row.key}>
                 <dt className="muted">{row.label}</dt>
                 <dd>
-                  {formatNumber(item[row.key] as number, row.digits)} {row.unit}
+                  {formatNumber(measureValue(item, row.key), row.digits)} {row.unit}
                 </dd>
               </div>
             ))}

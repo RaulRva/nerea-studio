@@ -772,7 +772,8 @@ details summary {
   .shell,
   .client-card,
   .stat-row,
-  .measure-card dl {
+  .measure-card dl,
+  .evolution-grid {
     grid-template-columns: 1fr;
   }
 
@@ -852,11 +853,154 @@ details summary {
   }
 }
 
-.diet-sheet {
+.shop-screen {
+  display: grid;
+  gap: 28px;
+}
+
+.shop-groups {
+  display: grid;
+  gap: 28px;
+}
+
+.shop-groups h2 {
+  margin-bottom: 12px;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 520;
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shop-grid li {
+  min-height: 132px;
+  padding: 16px;
+  border: 1px solid var(--color-line);
+  border-radius: 18px;
+  background: var(--color-cream);
+}
+
+.shop-grid strong {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 520;
+  line-height: 1;
+}
+
+.shop-grid strong.shop-mixed {
+  font-size: 1.15rem;
+  line-height: 1.25;
+}
+
+.shop-grid strong span {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.shop-grid p {
+  margin-top: 12px;
+}
+
+.evolution {
+  margin-bottom: 22px;
+}
+
+.evolution h2 {
+  font-family: var(--font-display);
+  font-weight: 520;
+  font-size: 1.8rem;
+}
+
+.evolution-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.evolution-grid article {
+  background: var(--color-cream);
+  border: 1px solid var(--color-line);
+  border-radius: 22px;
+  padding: 18px 18px 12px;
+}
+
+.evolution-grid article.featured {
+  grid-column: 1 / -1;
+}
+
+.evolution-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.evolution-top p {
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 0.74rem;
+}
+
+.evolution-top strong {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 520;
+  line-height: 0.95;
+}
+
+.evolution-top .delta {
+  margin-top: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--color-paper);
+  white-space: nowrap;
+}
+
+.evolution-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 8px;
+  color: var(--color-ink);
+}
+
+.evolution-dates {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 2px;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+}
+
+.shop-sheet {
+  page: lista;
+}
+
+.diet-sheet,
+.shop-sheet {
   display: none;
 }
 
-.diet-sheet table {
+.diet-sheet table,
+.shop-sheet table {
   width: 100%;
   border-collapse: collapse;
   font-size: 11px;
@@ -864,7 +1008,9 @@ details summary {
 }
 
 .diet-sheet th,
-.diet-sheet td {
+.diet-sheet td,
+.shop-sheet th,
+.shop-sheet td {
   border: 1px solid #111;
   padding: 6px;
   vertical-align: top;
@@ -872,7 +1018,8 @@ details summary {
 }
 
 .diet-sheet thead th,
-.diet-sheet tbody th {
+.diet-sheet tbody th,
+.shop-sheet thead th {
   background: #f6ecde;
   font-weight: 650;
 }
@@ -901,6 +1048,8 @@ details summary {
   .btn-quiet,
   .site-footer,
   .diet-screen,
+  .shop-screen,
+  .shop-sheet,
   .page-head,
   .stat-row,
   .banner,
@@ -909,11 +1058,17 @@ details summary {
     display: none !important;
   }
 
-  .diet-sheet {
+  .diet-sheet,
+  body[data-print="lista"] .shop-sheet {
     display: block !important;
   }
 
-  .diet-sheet h1 {
+  body[data-print="lista"] .diet-sheet {
+    display: none !important;
+  }
+
+  .diet-sheet h1,
+  .shop-sheet h1 {
     margin: 0 0 12px;
     font-size: 18px;
   }
@@ -934,5 +1089,10 @@ details summary {
   @page {
     size: A4 landscape;
     margin: 10mm;
+  }
+
+  @page lista {
+    size: A4 portrait;
+    margin: 14mm;
   }
 }

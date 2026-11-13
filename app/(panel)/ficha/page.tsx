@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { requireUser } from "@/lib/auth";
 import { getMeasurements } from "@/lib/data";
+import { FichaEvolution } from "@/components/ficha-evolution";
 import { FichaForm } from "@/components/ficha-form";
 import { FichaHistory } from "@/components/ficha-history";
 import { Notice } from "@/components/notice";
@@ -34,8 +35,9 @@ async function FichaView({
       {first ? (
         <p className="lede">Peso, altura y perímetros. Con esto puede ajustar la dieta y los hábitos.</p>
       ) : (
-        <p className="lede">Cada medición se guarda en el historial. Las anteriores siguen aquí.</p>
+        <p className="lede">El cambio se cuenta desde la primera medición. Las anteriores siguen en el historial.</p>
       )}
+      <FichaEvolution measurements={measurements} />
       <FichaHistory measurements={measurements} returnTo="/ficha" />
       <section className="measure-card">
         <h2>{first ? "Tu ficha" : "Nueva medición"}</h2>
